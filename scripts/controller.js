@@ -44,7 +44,7 @@
             var path = el.path + 's' + DEFAULT_SIZE + '/' + el.fileName;
             var pos = i + 1;
             var item = '<img src="' + path + '">';
-            withPos && (item += ' ' + pos);
+            withPos && (item += '\n<br> ' + pos);
             item += '\n\n';
             str += item;
         }
@@ -57,8 +57,8 @@
         picasaImportField.focus();
     }
 
-    function parseImportUrl(val){
-        var url = '';
+    function importFromPicasa(val){
+        var url;
         var portions = val.split('google.com/');
         var subPortion = portions[1];
         if (subPortion){
@@ -77,6 +77,44 @@
             }
 
             url = API_URL + '/user/' + userData[0] + '/album/' + userData[1] + '?&alt=json&' + authPushData;
+        }
+        return url;
+    }
+
+    function importFromGooglePlus(val){
+        var url = '';
+        var portions = val.split('google.com/');
+        var subPortion = portions[1];
+        if (subPortion){
+            // all ok!
+
+            var subData = subPortion.split('?');
+            var userData = subData ? subData[0].split('/') : subPortion;
+
+
+            var authData = subPortion.split('?')[1];
+            var authSubData = authData.split('&');
+            var authPushData = '';
+            for (var i = 0, l = authSubData.length; i < l; i++){
+                var item = authSubData[i];
+                if (item.indexOf('authkey=') == 0){
+                    authPushData = item.replace('authkey=', 'authkey=Gv1sRg');
+                    break;
+                }
+            }
+
+            url = API_URL + '/user/' + userData[1] + '/albumid/' + userData[3] + '?&alt=json&' + authPushData;
+        }
+        return url;
+    }
+
+    function parseImportUrl(val){
+        var url = '';
+
+        if (val.indexOf('picasaweb.google.com') != -1){
+            url = importFromPicasa(val);
+        } else if (val.indexOf('plus.google.com') != -1){
+            url = importFromGooglePlus(val);
         }
 
         return url;
@@ -231,7 +269,7 @@
         
         mainContainer.on('mousedown touchstart', function(e){
             var target = $(e.target);
-            if (target.closest('.hello-tip').length){
+            if (target.closest('.btn-hello-tip').length){
                 // clicked to first tip, open 
                 showImport();
             } else if (target.closest('.run-import').length){

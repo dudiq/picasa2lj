@@ -96,6 +96,10 @@ table {
     margin-top: 25%;
 }
 
+.hello-info{
+    text-align: left;
+}
+
 .top-menu{
     display: none;
 }
