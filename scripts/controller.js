@@ -10,6 +10,9 @@
 
     var DEFAULT_SIZE = 1200;
 
+    var TYPE_PICASA = 'picasa';
+    var TYPE_GPLUS = 'gplus';
+
     var percentTimerId;
 
     var API_URL = 'https://picasaweb.google.com/data/feed/base';
@@ -17,8 +20,11 @@
 
     var elements = [];
     var parsedElements = [];
+    var parsedElementsMap = {};
     
     var currentElementPos = -1;
+
+    var isSorted = false;
 
     // DOM elements
     var mainContainer;
@@ -35,6 +41,32 @@
     var fitToScreen;
     var outputContainer;
     var outputTextarea;
+    var settingsContainer;
+
+    function guid(num){
+        var today = (new Date()).getTime().toString(16);
+        function fourChars() {
+            return Math.floor(
+                Math.random() * 0x10000 /* 65536 */
+            ).toString(16);
+        }
+
+        if (num) {
+            var ret = fourChars();
+            for (var i = 0; i < (num); i++) {
+                ret += '-' + fourChars();
+            }
+            return (ret + '');
+        } else {
+            // return as "8x-8x-7x" (x - max chars)
+            return (
+            fourChars() + fourChars() + fourChars() + '-' +
+            fourChars() + fourChars() + fourChars() + '-' +
+            today
+            );
+        }
+
+    }
 
     function parseToOutput(withPos){
         var str = '';
@@ -44,7 +76,7 @@
             var path = el.path + 's' + DEFAULT_SIZE + '/' + el.fileName;
             var pos = i + 1;
             var item = '<img src="' + path + '">';
-            withPos && (item += '\n<br> ' + pos);
+            withPos && (item += '\n' + pos + '<br>');
             item += '\n\n';
             str += item;
         }
@@ -108,12 +140,23 @@
         return url;
     }
 
-    function parseImportUrl(val){
-        var url = '';
+    function getTypeOfUrl(val){
+        var type = '';
 
         if (val.indexOf('picasaweb.google.com') != -1){
-            url = importFromPicasa(val);
+            type = TYPE_PICASA;
         } else if (val.indexOf('plus.google.com') != -1){
+            type = TYPE_GPLUS;
+        }
+        return type;
+    }
+
+    function parseImportUrl(val, type){
+        var url = '';
+
+        if (type == TYPE_PICASA){
+            url = importFromPicasa(val);
+        } else if (type == TYPE_GPLUS){
             url = importFromGooglePlus(val);
         }
 
@@ -149,19 +192,22 @@
 
         runPercents();
 
-        var url = parseImportUrl(val);
+        var type = getTypeOfUrl(val);
+        var url = parseImportUrl(val, type);
 
         if (url){
             elements.length = 0;
             parsedElements.length = 0;
+            clearObj(parsedElementsMap);
             $.get(url, function(data){
                 if (data && data.feed){
                     var feed = data.feed;
                     var entry = feed.entry;
                     for (var i = 0, l = entry.length; i < l; i++){
-                        var item = createNewElement(entry[i]);
+                        var item = createNewElement(entry[i], type);
                         elements.push(item);
                         parsedElements.push(item);
+                        parsedElementsMap[item.id] = item;
                     }
                     stopPercents();
                     onImportDone();
@@ -174,11 +220,13 @@
         }
     }
 
-    function createNewElement(picasaEl){
+    function createNewElement(picasaEl, type){
         var src = picasaEl.content.src;
         var fileName = src.split('/').pop();
         var path = src.substring(0, src.length - fileName.length);
         var ret = {
+            id: guid(),
+            type: type,
             title: picasaEl.title.$t,
             fileName: fileName,
             path: path
@@ -206,8 +254,10 @@
     }
 
     function removeElement(pos){
+        var item = parsedElements[pos];
         parsedElements.splice(pos, 1);
-        ls(LS_PARSED, parsedElements);
+        item && (delete parsedElementsMap[item.id]);
+
         elementsList.find('.item:eq(' + pos + ')').remove();
         updateAllPositions();
         setSelected(pos);
@@ -229,7 +279,7 @@
         var title = el.fileName;
         var str = '<li class="item ui-state-default" title="' + title + '">' +
             '<span class="item-title">' + title + '</span>' +
-            '<span class="item-pos">' + pos + '</span>' +
+            '<span class="item-pos" data-pos-id="' + el.id + '">' + pos + '</span>' +
             '<img class="item-img" src="'+ path +'">' +
             '<span class="item-desc"></span>' +
             '</li>';
@@ -238,9 +288,15 @@
     }
 
     function updateAllPositions(){
+        parsedElements.length = 0;
         elementsList.find('.item-pos').each(function(index, el){
             el.innerHTML = (index + 1) + '';
+            var id = el.getAttribute('data-pos-id');
+            var item = parsedElementsMap[id];
+            item && parsedElements.push(item);
         });
+
+        ls(LS_PARSED, parsedElements);
     }
 
     function closePreview(){
@@ -265,9 +321,17 @@
 
     }
 
+    function showSettings(){
+        
+    }
+
     function bindButtons(){
         
-        mainContainer.on('mousedown touchstart', function(e){
+        mainContainer.on('mouseup touchend', function(e){
+            if (isSorted){
+                isSorted = false;
+                return;
+            }
             var target = $(e.target);
             if (target.closest('.btn-hello-tip').length){
                 // clicked to first tip, open 
@@ -292,6 +356,8 @@
                 parseToOutput(true);
             } else if (target.closest('.btn-build-no-number').length){
                 parseToOutput(false);
+            } else if (target.closest('.settings').length){
+                showSettings();
             }
         });
     }
@@ -331,14 +397,20 @@
         var pEls = ls(LS_PARSED);
         if (els){
             elements = els;
-            if (pEls){
-                parsedElements = pEls;
-            } else {
-                for (var i = 0, l = elements.length; i < l; i++){
-                    parsedElements.push(elements[i]);
-                }
+            clearObj(parsedElementsMap);
+            var processArr = (pEls) ? pEls : elements;
+            for (var i = 0, l = processArr.length; i < l; i++){
+                var item = processArr[i];
+                parsedElements.push(item);
+                parsedElementsMap[item.id] = item;
             }
             onImportDone();
+        }
+    }
+
+    function clearObj(obj){
+        for (var key in obj){
+            delete obj[key];
         }
     }
 
@@ -365,6 +437,8 @@
         outputContainer = mainContainer.find('.output');
         outputTextarea = outputContainer.find('.output-textarea');
 
+        settingsContainer = mainContainer.find('.settings');
+
         picasaImportField.on('keydown', function(e){
             if (e.keyCode == 13){
                 runImport();
@@ -372,6 +446,9 @@
         });
 
         elementsList.sortable({
+            start: function(){
+                isSorted = true;
+            },
             update: function(){
                 updateAllPositions();
             }

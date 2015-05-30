@@ -111,7 +111,7 @@ table {
     margin-top: 20%;
 }
 
-.picasa-import, .thumbs-list, .viewer, .output{
+.thumbs-list, .popup{
     display: none;
 }
 
