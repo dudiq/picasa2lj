@@ -223,3 +223,8 @@ table {
     width: 80%;
     height: 200px;
 }
+
+.settings .popup-content{
+    max-width: 1180px;
+    margin: 20px;
+}

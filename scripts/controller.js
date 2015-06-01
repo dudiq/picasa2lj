@@ -322,7 +322,11 @@
     }
 
     function showSettings(){
-        
+        settingsContainer.show();
+    }
+
+    function isTargetClosest(target, className){
+        return target.closest(className).length;
     }
 
     function bindButtons(){
@@ -333,30 +337,30 @@
                 return;
             }
             var target = $(e.target);
-            if (target.closest('.btn-hello-tip').length){
+            if (isTargetClosest(target, '.btn-hello-tip')){
                 // clicked to first tip, open 
                 showImport();
-            } else if (target.closest('.run-import').length){
+            } else if (isTargetClosest(target, '.run-import')){
                 runImport();
-            } else if (target.closest('.btn-import').length){
+            } else if (isTargetClosest(target, '.btn-import')){
                 showImport();
-            } else if (target.closest('.btn-prev').length){
+            } else if (isTargetClosest(target, '.btn-prev')){
                 setSelected(currentElementPos - 1);
-            } else if (target.closest('.btn-next').length){
+            } else if (isTargetClosest(target, '.btn-next')){
                 setSelected(currentElementPos + 1);
-            } else if (target.closest('.popup-overflow').length){
+            } else if (isTargetClosest(target, '.popup-overflow')){
                 target.closest('.popup-overflow').parent().hide();
-            } else if (target.closest('.item').length){
+            } else if (isTargetClosest(target, '.item')){
                 var pos = target.closest('.item').index();
                 setSelected(pos);
                 showPreview();
-            } else if (target.closest('.viewer').length){
+            } else if (isTargetClosest(target, '.viewer')){
                 closePreview();
-            } else if (target.closest('.btn-build-number').length){
+            } else if (isTargetClosest(target, '.btn-build-number')){
                 parseToOutput(true);
-            } else if (target.closest('.btn-build-no-number').length){
+            } else if (isTargetClosest(target, '.btn-build-no-number')){
                 parseToOutput(false);
-            } else if (target.closest('.settings').length){
+            } else if (isTargetClosest(target, '.btn-settings')){
                 showSettings();
             }
         });
