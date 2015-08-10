@@ -7,6 +7,7 @@
     var LS_LIST = 'list';
     var LS_PARSED = 'parsed';
     var LS_ALBUM = 'album';
+    var LS_UNDO = 'undo';
 
     var DEFAULT_SIZE = 1200;
 
@@ -15,13 +16,16 @@
 
     var percentTimerId;
 
+    var clickEvs = 'mouseup touchend';
+
     var API_URL = 'https://picasaweb.google.com/data/feed/base';
 
 
     var elements = [];
     var parsedElements = [];
     var parsedElementsMap = {};
-    
+    var undoElements = [];
+
     var currentElementPos = -1;
 
     var isSorted = false;
@@ -198,6 +202,7 @@
         if (url){
             elements.length = 0;
             parsedElements.length = 0;
+            undoElements.length = 0;
             clearObj(parsedElementsMap);
             $.get(url, function(data){
                 if (data && data.feed){
@@ -237,6 +242,7 @@
     function onImportDone(){
         ls(LS_LIST, elements);
         ls(LS_PARSED, parsedElements);
+        ls(LS_UNDO, undoElements);
 
         helloTip.hide();
         topMenu.show();
@@ -253,14 +259,44 @@
         setSelected(0);
     }
 
+    function undoElement(){
+        var params = undoElements.pop();
+        if (params){
+            var pos = params.pos;
+            var id = params.id;
+            var item = getElementbyId(id);
+            if (item){
+                var el = createThumb(item, pos + 1);
+                var beforeEl = elementsList.find('.item:eq(' + pos + ')');
+                if (beforeEl.length){
+                    $(el).insertBefore(beforeEl);
+                    pushToParsed(item, pos);
+                } else {
+                    elementsList.append(el);
+                    pushToParsed(item);
+                }
+                updateAllPositions();
+                setSelected(pos);
+            }
+        }
+        ls(LS_UNDO, undoElements);
+    }
+
     function removeElement(pos){
         var item = parsedElements[pos];
         parsedElements.splice(pos, 1);
-        item && (delete parsedElementsMap[item.id]);
+        if (item) {
+            undoElements.push({
+                pos: pos,
+                id: item.id
+            });
+            delete parsedElementsMap[item.id];
+        }
 
         elementsList.find('.item:eq(' + pos + ')').remove();
         updateAllPositions();
         setSelected(pos);
+        ls(LS_UNDO, undoElements);
     }
 
     function setSelected(pos){
@@ -329,39 +365,61 @@
         return target.closest(className).length;
     }
 
+    function bindClick(className, cb){
+        mainContainer.find(className).on(clickEvs, function(e){
+            if (isSorted){
+                isSorted = false;
+                return;
+            }
+            cb(e);
+        });
+    }
+
     function bindButtons(){
-        
-        mainContainer.on('mouseup touchend', function(e){
+
+
+        bindClick('.btn-hello-tip, .btn-import', showImport);
+        bindClick('.run-import', runImport);
+        bindClick('.btn-prev', function(){
+            setSelected(currentElementPos - 1);
+        });
+        bindClick('.btn-next', function(){
+            setSelected(currentElementPos + 1);
+        });
+        bindClick('.popup-overflow', function(e){
+            var target = $(e.target);
+            target.closest('.popup-overflow').parent().hide();
+        });
+
+        bindClick('.viewer', closePreview);
+        bindClick('.btn-build-number', function(){
+            parseToOutput(true);
+        });
+
+        bindClick('.btn-build-no-number', function(){
+            parseToOutput(false);
+        });
+
+        bindClick('.btn-settings', showSettings);
+
+        bindClick('.btn-remove', function(){
+            removeElement(currentElementPos);
+        });
+
+        bindClick('.btn-undo', function(){
+            undoElement();
+        });
+
+        mainContainer.on(clickEvs, function(e){
             if (isSorted){
                 isSorted = false;
                 return;
             }
             var target = $(e.target);
-            if (isTargetClosest(target, '.btn-hello-tip')){
-                // clicked to first tip, open 
-                showImport();
-            } else if (isTargetClosest(target, '.run-import')){
-                runImport();
-            } else if (isTargetClosest(target, '.btn-import')){
-                showImport();
-            } else if (isTargetClosest(target, '.btn-prev')){
-                setSelected(currentElementPos - 1);
-            } else if (isTargetClosest(target, '.btn-next')){
-                setSelected(currentElementPos + 1);
-            } else if (isTargetClosest(target, '.popup-overflow')){
-                target.closest('.popup-overflow').parent().hide();
-            } else if (isTargetClosest(target, '.item')){
+            if (target.closest('.item').length){
                 var pos = target.closest('.item').index();
                 setSelected(pos);
                 showPreview();
-            } else if (isTargetClosest(target, '.viewer')){
-                closePreview();
-            } else if (isTargetClosest(target, '.btn-build-number')){
-                parseToOutput(true);
-            } else if (isTargetClosest(target, '.btn-build-no-number')){
-                parseToOutput(false);
-            } else if (isTargetClosest(target, '.btn-settings')){
-                showSettings();
             }
         });
     }
@@ -370,6 +428,9 @@
         var kCodes = keyboard.codes;
         keyboard.onPress(function(button){
             switch (button) {
+                case kCodes.Z:
+                    undoElement();
+                    break;
                 case kCodes.LEFT:
                     // move thumb to left
                     setSelected(currentElementPos - 1);
@@ -399,17 +460,43 @@
 
         var els = ls(LS_LIST);
         var pEls = ls(LS_PARSED);
+        var undos = ls(LS_UNDO);
+
+        if (undos){
+            undoElements = undos;
+        }
+
         if (els){
             elements = els;
             clearObj(parsedElementsMap);
             var processArr = (pEls) ? pEls : elements;
             for (var i = 0, l = processArr.length; i < l; i++){
                 var item = processArr[i];
-                parsedElements.push(item);
-                parsedElementsMap[item.id] = item;
+                pushToParsed(item);
             }
             onImportDone();
         }
+    }
+
+    function pushToParsed(item, pos){
+        if (pos !== undefined){
+            parsedElements.splice(pos, 0, item);
+        } else {
+            parsedElements.push(item);
+        }
+        parsedElementsMap[item.id] = item;
+    }
+
+    function getElementbyId(id){
+        var ret;
+        for (var i = 0, l = elements.length; i < l; i++){
+            var item = elements[i];
+            if (item.id == id){
+                ret = item;
+                break;
+            }
+        }
+        return ret;
     }
 
     function clearObj(obj){

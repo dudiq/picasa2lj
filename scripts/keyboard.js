@@ -13,7 +13,8 @@
         RIGHT: 'right',
         DELETE: 'delete',
         ENTER: 'enter',
-        ESC: 'esc'
+        ESC: 'esc',
+        Z: 'z'
     };
 
     keyboard.codes = codes;
@@ -23,7 +24,8 @@
         39: codes.RIGHT,
         46: codes.DELETE,
         13: codes.ENTER,
-        27: codes.ESC
+        27: codes.ESC,
+        90: codes.Z
     };
 
     var pressedCallbacks = [];
