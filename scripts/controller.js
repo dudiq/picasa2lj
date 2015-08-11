@@ -102,7 +102,7 @@
             var subData = subPortion.split('?');
             var userData = subData ? subData[0].split('/') : subPortion;
             var authData = subData ? subData[1] : '&';
-            var authSubData = authData.split('&');
+            var authSubData = authData ? authData.split('&') : [];
             var authPushData = '';
             for (var i = 0, l = authSubData.length; i < l; i++){
                 var item = authSubData[i];
