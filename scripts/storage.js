@@ -147,6 +147,17 @@
         return imports.getViewPath(el, size);
     };
 
+    storage.moveItem = function(id, newPos){
+        for (var i = 0, l = parsedElementsIds.length; i < l; i++){
+            if (parsedElementsIds[i] == id){
+                parsedElementsIds.splice(i, 1);
+                parsedElementsIds.splice(newPos, 0, id);
+                ls(LS_PARSED_LIST, parsedElementsIds);
+                break;
+            }
+        }
+    };
+
     storage.settings = function(fields, val){
         if (typeof fields == "string"){
             var tmp = {};

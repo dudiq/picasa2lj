@@ -279,7 +279,6 @@
         });
     }
 
-
     function onStart(){
         mainContainer = $('.container');
         importContainer = mainContainer.find('.picasa-import');
@@ -320,7 +319,11 @@
             start: function(){
                 isSorted = true;
             },
-            update: function(){
+            update: function(ev, data){
+                var el = data.item;
+                var newPos = el.index();
+                var id = el.find('.item-pos').data('pos-id');
+                storage.moveItem(id, newPos);
                 updateAllPositions();
             }
         });
