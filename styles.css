@@ -8,7 +8,7 @@ body {
 html {
     font-family: sans-serif;
     -webkit-text-size-adjust: 100%;
-    -ms-text-size-adjust: 100%
+    -ms-text-size-adjust: 100%;
     -webkit-tap-highlight-color: rgba(0, 0, 0, 0)
 }
 
@@ -27,7 +27,7 @@ button, input, select, textarea {
 }
 
 button, input {
-    line-height: normal
+    line-height: normal;
     -webkit-tap-highlight-color: rgba(0,0,0,0) !important;
     tap-highlight-color: rgba(0,0,0,0) !important;
     outline: none !important;
@@ -60,17 +60,13 @@ table {
 
 }
 
-.top-menu{
-
-}
-
 .top-menu-right{
     display: inline-block;
     float: right;
 }
 
 .thumbs-list{
-
+    margin-top: 40px;
 }
 
 .viewer{
@@ -93,7 +89,7 @@ table {
 .hello-tip{
     margin: 0 auto;
     text-align: center;
-    margin-top: 25%;
+    margin-top: 10%;
 }
 
 .hello-info{
@@ -102,6 +98,11 @@ table {
 
 .top-menu{
     display: none;
+    position: fixed;
+    width: 100%;
+    top: 0;
+    z-index: 10;
+    background-color: #4F4F4F;
 }
 
 .import-progress{
@@ -122,10 +123,11 @@ table {
 
 .popup{
     position: absolute;
-    top: 0;
+    top: 40px;
     left: 0;
     right: 0;
     bottom: 0;
+    z-index: 1;
 }
 
 .popup-content{
@@ -154,17 +156,32 @@ table {
     outline: none !important;
     display: inline-block;
     margin: 0 10px;
-    padding: 10px;
     background-color: #6C6C6C;
     border-radius: 5px;
     cursor: pointer;
+    padding: 0 10px;
+    height: 40px;
+    line-height: 40px;
+}
+
+.btn .plj-icon{
+    font-size: 1.5em;
+    top: 0.2em;
+    position: relative;
+    margin-right: 5px;
+}
+
+.btn-next .plj-chevron_right{
+    margin-right: 0;
+    margin-left: 5px;
 }
 
 .field{
     padding: 10px;
     min-width: 50%;
-    border-radius: 8px;
+    border-radius: 2px;
     border: 0;
+    margin: 0 2px;
 }
 
 .item{
@@ -227,4 +244,24 @@ table {
 .settings .popup-content{
     max-width: 1180px;
     margin: 20px;
+}
+
+.settings-pane{
+    background: #4F4F4F;
+    padding: 20px;
+}
+
+.settings-item{
+    margin: 10px 0;
+}
+
+@media screen and (max-width: 1125px) {
+    .top-menu .btn .in-btn-title{
+        display: none;
+    }
+
+    .top-menu .btn .plj-icon{
+        display: inline-block;
+        margin: 0;
+    }
 }

@@ -19,24 +19,26 @@
 
     <link rel="stylesheet" href="jquery-ui.structure.min.css">
     <link rel="stylesheet" href="jquery-ui.theme.min.css">
+    <link rel="stylesheet" href="p2lj.css">
 
     <link rel="stylesheet" href="styles.css">
+
 </head>
 <body>
 
 <div class="container">
     <div class="top-menu">
-        <div class="btn btn-import">импорт</div>
-        <div class="btn btn-build-number">собрать с номером</div>
-        <div class="btn btn-build-no-number">собрать без номера</div>
-        <div class="btn btn-settings">настройки</div>
+        <div class="btn btn-import"><span class="plj-icon plj-import_export"></span><span class="in-btn-title">импорт</span></div>
+        <div class="btn btn-build-number"><span class="plj-icon plj-code"></span><span class="in-btn-title">собрать с номером</span></div>
+        <div class="btn btn-build-no-number"><span class="plj-icon plj-code"></span><span class="in-btn-title">собрать без номера</span></div>
+        <div class="btn btn-settings"><span class="plj-icon plj-settings"></span><span class="in-btn-title">настройки</span></div>
 
         <div class="top-menu-right">
-            <div class="btn btn-prev">&lt; туда</div>
-            <div class="btn btn-next">сюда &gt;</div>
+            <div class="btn btn-prev"><span class="plj-icon plj-chevron_left"></span><span class="in-btn-title">туда</span></div>
+            <div class="btn btn-next"><span class="in-btn-title">сюда</span><span class="plj-icon plj-chevron_right"></span></div>
             ||
-            <div class="btn btn-undo">отменить</div>
-            <div class="btn btn-remove">удалить</div>
+            <div class="btn btn-undo"><span class="plj-icon plj-undo"></span><span class="in-btn-title">отменить</span></div>
+            <div class="btn btn-remove"><span class="plj-icon plj-delete"></span><span class="in-btn-title">удалить</span></div>
         </div>
     </div>
 
@@ -90,7 +92,15 @@
 
     <div class="popup settings">
         <div class="popup-content">
-            <label><input type="checkbox" class="fit-to-screen" checked>превьюху на экран</label>
+            <div class="settings-pane">
+                <div class="settings-item">
+                    <label><input type="checkbox" class="fit-to-screen" checked>растянуть превью на экран</label>
+                </div>
+                <div class="settings-item">
+                    <div>размер картинки на выходе в пикселях:</div>
+                    <input type="text" class="field image-size-field">
+                </div>
+            </div>
         </div>
         <div class="popup-overflow"></div>
     </div>
@@ -100,12 +110,22 @@
 
 <script src="scripts/jquery-2.1.3.min.js"></script>
 <script src="scripts/jquery-ui.min.js"></script>
+<script src="scripts/jquery-jr-click.js"></script>
 
 <script src="scripts/app.js"></script>
-
+<script src="scripts/errors.js"></script>
+<script src="scripts/helpers.js"></script>
 <script src="scripts/ls.js"></script>
 <script src="scripts/keyboard.js"></script>
 <script src="scripts/notify.js"></script>
 
-<script src="scripts/controller.js"></script>
+
+<script src="scripts/imports/imports.js"></script>
+<script src="scripts/imports/imports.base.js"></script>
+<script src="scripts/imports/imports.google.js"></script>
+<script src="scripts/imports/imports.yandex.js"></script>
+
+<script src="scripts/storage.js"></script>
+<script src="scripts/dom.js"></script>
+
 </body>

@@ -1,19 +1,16 @@
 (function(){
-
-    var collection = {};
+    var modules = {};
 
     var isStarted = false;
     var startCallbacks = [];
 
     var app = function(name, value){
         if (value){
-            collection[name] = value;
+            modules[name] = value;
         }
-        return collection[name];
+        return modules[name];
     };
-
-
-
+    
     app.onStart = function(callback){
         if (isStarted){
             callback();

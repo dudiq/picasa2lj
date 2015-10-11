@@ -2,14 +2,9 @@
     var app = window.app;
     var notify = app('notify', {});
 
-    var tpl = "";
-
+    // todo add notify as html item
     notify.error = function(msg){
-        return show(msg, 'error');
+        msg && alert('ошибка! ' + msg);
     };
-
-    function show(msg, type){
-
-    }
 
 })();
